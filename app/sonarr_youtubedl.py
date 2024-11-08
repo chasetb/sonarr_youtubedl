@@ -125,7 +125,7 @@ class SonarrYTDL:
             logger.debug(f"Begin GET with params: {params}")
             args.update(params)
         url = f"{url}?{urllib.parse.urlencode(args)}"
-        res = requests.get(url)
+        res = requests.get(url, timeout=10)
         return res
 
     def request_put(self, url, params=None, jsondata=None):
@@ -138,7 +138,7 @@ class SonarrYTDL:
         if params is not None:
             args.update(params)
             logger.debug(f"Begin PUT with params: {params}")
-        res = requests.post(url, headers=headers, params=args, json=jsondata)
+        res = requests.post(url, headers=headers, params=args, json=jsondata, timeout=10)
         return res
 
     def rescanseries(self, series_id):
