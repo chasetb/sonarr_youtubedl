@@ -1,11 +1,11 @@
-import re
-import os
-import sys
 import datetime
-import yaml
 import logging
+import os
+import re
+import sys
 from logging.handlers import RotatingFileHandler
 
+import yaml
 
 CONFIGFILE = os.environ["CONFIGPATH"]
 # CONFIGPATH = CONFIGFILE.replace('config.yml', '')
@@ -55,9 +55,7 @@ def checkconfig():
     config_file = os.path.abspath(CONFIGFILE)
     config_file_exists = os.path.exists(os.path.abspath(config_file))
     if not config_file_exists:
-        logger.critical(
-            "Configuration file not found."
-        )  # print('Configuration file not found.')
+        logger.critical("Configuration file not found.")  # print('Configuration file not found.')
         if not config_template_exists:
             os.system("cp /app/config.yml.template " + config_template)
         logger.critical(
@@ -65,10 +63,8 @@ def checkconfig():
         )  # sys.exit("Create a config.yml using config.yml.template as an example.")
         sys.exit()
     else:
-        logger.info(
-            "Configuration Found. Loading file."
-        )  # print('Configuration Found. Loading file.')
-        with open(config_file, "r") as ymlfile:
+        logger.info("Configuration Found. Loading file.")  # print('Configuration Found. Loading file.')
+        with open(config_file) as ymlfile:
             cfg = yaml.load(ymlfile, Loader=yaml.BaseLoader)
         return cfg
 
@@ -93,13 +89,11 @@ def offsethandler(airdate, offset):
         hours = int(offset["hours"])
     if "minutes" in offset:
         minutes = int(offset["minutes"])
-    airdate = airdate + datetime.timedelta(
-        weeks=weeks, days=days, hours=hours, minutes=minutes
-    )
+    airdate = airdate + datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes)
     return airdate
 
 
-class YoutubeDLLogger(object):
+class YoutubeDLLogger:
     def __init__(self):
         self.logger = logging.getLogger("sonarr_youtubedl")
 
@@ -120,13 +114,9 @@ def ytdl_hooks_debug(d):
     logger = logging.getLogger("sonarr_youtubedl")
     if d["status"] == "finished":
         file_tuple = os.path.split(os.path.abspath(d["filename"]))
-        logger.info(
-            "      Done downloading {}".format(file_tuple[1])
-        )  # print("Done downloading {}".format(file_tuple[1]))
+        logger.info(f"      Done downloading {file_tuple[1]}")  # print("Done downloading {}".format(file_tuple[1]))
     if d["status"] == "downloading":
-        progress = "      {} - {} - {}".format(
-            d["filename"], d["_percent_str"], d["_eta_str"]
-        )
+        progress = "      {} - {} - {}".format(d["filename"], d["_percent_str"], d["_eta_str"])
         logger.debug(progress)
 
 
@@ -134,7 +124,7 @@ def ytdl_hooks(d):
     logger = logging.getLogger("sonarr_youtubedl")
     if d["status"] == "finished":
         file_tuple = os.path.split(os.path.abspath(d["filename"]))
-        logger.info("      Downloaded - {}".format(file_tuple[1]))
+        logger.info(f"      Downloaded - {file_tuple[1]}")
 
 
 def setup_logging(lf_enabled=True, lc_enabled=True, debugging=False):
@@ -142,15 +132,11 @@ def setup_logging(lf_enabled=True, lc_enabled=True, debugging=False):
     log_level = logging.DEBUG if debugging else log_level
     logger = logging.getLogger("sonarr_youtubedl")
     logger.setLevel(log_level)
-    log_format = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    log_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     if lf_enabled:
         # setup logfile
-        log_file = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "logs")
-        )
+        log_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
         log_file = os.path.abspath(log_file + "/sonarr_youtubedl.log")
         loggerfile = RotatingFileHandler(log_file, maxBytes=5000000, backupCount=5)
         loggerfile.setLevel(log_level)

@@ -1,23 +1,24 @@
-import requests
-import urllib.parse
-import yt_dlp
+import argparse
+import logging
 import os
-import sys
 import re
+import sys
+import time
+import urllib.parse
+from datetime import datetime
+
+import requests
+import schedule
+import yt_dlp
 from utils import (
-    upperescape,
+    YoutubeDLLogger,
     checkconfig,
     offsethandler,
-    YoutubeDLLogger,
+    setup_logging,
+    upperescape,
     ytdl_hooks,
     ytdl_hooks_debug,
-    setup_logging,
-)  # NOQA
-from datetime import datetime
-import schedule
-import time
-import logging
-import argparse
+)
 
 # allow debug arg for verbose logging
 parser = argparse.ArgumentParser(description="Process some integers.")
@@ -35,7 +36,7 @@ CONFIGPATH = CONFIGFILE.replace("config.yml", "")
 SCANINTERVAL = 60
 
 
-class SonarrYTDL(object):
+class SonarrYTDL:
     def __init__(self):
         """Set up app with config file settings"""
         cfg = checkconfig()
@@ -94,55 +95,41 @@ class SonarrYTDL(object):
 
     def get_episodes_by_series_id(self, series_id):
         """Returns all episodes for the given series"""
-        logger.debug(
-            "Begin call Sonarr for all episodes for series_id: {}".format(series_id)
-        )
+        logger.debug(f"Begin call Sonarr for all episodes for series_id: {series_id}")
         args = {"seriesId": series_id}
-        res = self.request_get(
-            "{}/{}/episode".format(self.base_url, self.sonarr_api_version), args
-        )
+        res = self.request_get(f"{self.base_url}/{self.sonarr_api_version}/episode", args)
         return res.json()
 
     def get_episode_files_by_series_id(self, series_id):
         """Returns all episode files for the given series"""
-        res = self.request_get(
-            "{}/{}/episodefile?seriesId={}".format(
-                self.base_url, self.sonarr_api_version, series_id
-            )
-        )
+        res = self.request_get(f"{self.base_url}/{self.sonarr_api_version}/episodefile?seriesId={series_id}")
         return res.json()
 
     def get_series(self):
         """Return all series in your collection"""
         logger.debug("Begin call Sonarr for all available series")
-        res = self.request_get(
-            "{}/{}/series".format(self.base_url, self.sonarr_api_version)
-        )
+        res = self.request_get(f"{self.base_url}/{self.sonarr_api_version}/series")
         return res.json()
 
     def get_series_by_series_id(self, series_id):
         """Return the series with the matching ID or 404 if no matching series is found"""
-        logger.debug(
-            "Begin call Sonarr for specific series series_id: {}".format(series_id)
-        )
-        res = self.request_get(
-            "{}/{}/series/{}".format(self.base_url, self.sonarr_api_version, series_id)
-        )
+        logger.debug(f"Begin call Sonarr for specific series series_id: {series_id}")
+        res = self.request_get(f"{self.base_url}/{self.sonarr_api_version}/series/{series_id}")
         return res.json()
 
     def request_get(self, url, params=None):
         """Wrapper on the requests.get"""
-        logger.debug("Begin GET with url: {}".format(url))
+        logger.debug(f"Begin GET with url: {url}")
         args = {"apikey": self.api_key}
         if params is not None:
-            logger.debug("Begin GET with params: {}".format(params))
+            logger.debug(f"Begin GET with params: {params}")
             args.update(params)
-        url = "{}?{}".format(url, urllib.parse.urlencode(args))
+        url = f"{url}?{urllib.parse.urlencode(args)}"
         res = requests.get(url)
         return res
 
     def request_put(self, url, params=None, jsondata=None):
-        logger.debug("Begin PUT with url: {}".format(url))
+        logger.debug(f"Begin PUT with url: {url}")
         """Wrapper on the requests.put"""
         headers = {
             "Content-Type": "application/json",
@@ -150,17 +137,15 @@ class SonarrYTDL(object):
         args = (("apikey", self.api_key),)
         if params is not None:
             args.update(params)
-            logger.debug("Begin PUT with params: {}".format(params))
+            logger.debug(f"Begin PUT with params: {params}")
         res = requests.post(url, headers=headers, params=args, json=jsondata)
         return res
 
     def rescanseries(self, series_id):
         """Refresh series information from trakt and rescan disk"""
-        logger.debug("Begin call Sonarr to rescan for series_id: {}".format(series_id))
+        logger.debug(f"Begin call Sonarr to rescan for series_id: {series_id}")
         data = {"name": "RescanSeries", "seriesId": str(series_id)}
-        res = self.request_put(
-            "{}/{}/command".format(self.base_url, self.sonarr_api_version), None, data
-        )
+        res = self.request_put(f"{self.base_url}/{self.sonarr_api_version}/command", None, data)
         return res.json()
 
     def filterseries(self):
@@ -198,9 +183,7 @@ class SonarrYTDL(object):
                         if "languages" in wnt["subtitles"]:
                             ser["subtitles_languages"] = wnt["subtitles"]["languages"]
                         if "autogenerated" in wnt["subtitles"]:
-                            ser["subtitles_autogenerated"] = wnt["subtitles"][
-                                "autogenerated"
-                            ]
+                            ser["subtitles_autogenerated"] = wnt["subtitles"]["autogenerated"]
                     ser["url"] = wnt["url"]
                     matched.append(ser)
         for check in matched:
@@ -219,11 +202,7 @@ class SonarrYTDL(object):
                     eps_date = datetime.strptime(eps["airDateUtc"], date_format)
                     if "offset" in ser:
                         eps_date = offsethandler(eps_date, ser["offset"])
-                if not eps["monitored"]:
-                    episodes.remove(eps)
-                elif eps["hasFile"]:
-                    episodes.remove(eps)
-                elif eps_date > now:
+                if not eps["monitored"] or eps["hasFile"] or eps_date > now:
                     episodes.remove(eps)
                 else:
                     if "sonarr_regex_match" in ser:
@@ -236,13 +215,9 @@ class SonarrYTDL(object):
                 logger.info("{0} no episodes needed".format(ser["title"]))
                 series.remove(ser)
             else:
-                logger.info(
-                    "{0} missing {1} episodes".format(ser["title"], len(episodes))
-                )
+                logger.info("{0} missing {1} episodes".format(ser["title"], len(episodes)))
                 for i, e in enumerate(episodes):
-                    logger.info(
-                        "  {0}: {1} - {2}".format(i + 1, ser["title"], e["title"])
-                    )
+                    logger.info("  {0}: {1} - {2}".format(i + 1, ser["title"], e["title"]))
         return needed
 
     def appendcookie(self, ytdlopts, cookies=None):
@@ -260,9 +235,9 @@ class SonarrYTDL(object):
             if cookie_exists is True:
                 ytdlopts.update({"cookiefile": cookie_path})
                 # if self.debug is True:
-                logger.debug("  Cookies file used: {}".format(cookie_path))
+                logger.debug(f"  Cookies file used: {cookie_path}")
             if cookie_exists is False:
-                logger.warning("  cookie files specified but doesn" "t exist.")
+                logger.warning("  cookie files specified but doesnt exist.")
             return ytdlopts
         else:
             return ytdlopts
@@ -290,13 +265,11 @@ class SonarrYTDL(object):
             "quiet": True,
         }
         if self.debug is True:
-            ytdlopts.update(
-                {
-                    "quiet": False,
-                    "logger": YoutubeDLLogger(),
-                    "progress_hooks": [ytdl_hooks],
-                }
-            )
+            ytdlopts.update({
+                "quiet": False,
+                "logger": YoutubeDLLogger(),
+                "progress_hooks": [ytdl_hooks],
+            })
         ytdlopts = self.appendcookie(ytdlopts, cookies)
         if self.debug is True:
             logger.debug("Youtube-DL opts used for episode matching")
@@ -337,14 +310,10 @@ class SonarrYTDL(object):
                         url = ser["url"]
                         if "cookies_file" in ser:
                             cookies = ser["cookies_file"]
-                        ydleps = self.ytdl_eps_search_opts(
-                            upperescape(eps["title"]), ser["playlistreverse"], cookies
-                        )
+                        ydleps = self.ytdl_eps_search_opts(upperescape(eps["title"]), ser["playlistreverse"], cookies)
                         found, dlurl = self.ytsearch(ydleps, url)
                         if found:
-                            logger.info(
-                                "    {}: Found - {}:".format(e + 1, eps["title"])
-                            )
+                            logger.info("    {}: Found - {}:".format(e + 1, eps["title"]))
                             ytdl_format_options = {
                                 "format": self.ytdl_format,
                                 "quiet": True,
@@ -359,63 +328,43 @@ class SonarrYTDL(object):
                                 "progress_hooks": [ytdl_hooks],
                                 "noplaylist": True,
                             }
-                            ytdl_format_options = self.appendcookie(
-                                ytdl_format_options, cookies
-                            )
+                            ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
-                                ytdl_format_options = self.customformat(
-                                    ytdl_format_options, ser["format"]
-                                )
+                                ytdl_format_options = self.customformat(ytdl_format_options, ser["format"])
                             if "subtitles" in ser:
                                 if ser["subtitles"]:
                                     postprocessors = []
-                                    postprocessors.append(
-                                        {
-                                            "key": "FFmpegSubtitlesConvertor",
-                                            "format": "srt",
-                                        }
-                                    )
-                                    postprocessors.append(
-                                        {
-                                            "key": "FFmpegEmbedSubtitle",
-                                        }
-                                    )
-                                    ytdl_format_options.update(
-                                        {
-                                            "writesubtitles": True,
-                                            "allsubtitles": True,
-                                            "writeautomaticsub": True,
-                                            "subtitleslangs": ser[
-                                                "subtitles_languages"
-                                            ],
-                                            "postprocessors": postprocessors,
-                                        }
-                                    )
+                                    postprocessors.append({
+                                        "key": "FFmpegSubtitlesConvertor",
+                                        "format": "srt",
+                                    })
+                                    postprocessors.append({
+                                        "key": "FFmpegEmbedSubtitle",
+                                    })
+                                    ytdl_format_options.update({
+                                        "writesubtitles": True,
+                                        "allsubtitles": True,
+                                        "writeautomaticsub": True,
+                                        "subtitleslangs": ser["subtitles_languages"],
+                                        "postprocessors": postprocessors,
+                                    })
 
                             if self.debug is True:
-                                ytdl_format_options.update(
-                                    {
-                                        "quiet": False,
-                                        "logger": YoutubeDLLogger(),
-                                        "progress_hooks": [ytdl_hooks_debug],
-                                    }
-                                )
+                                ytdl_format_options.update({
+                                    "quiet": False,
+                                    "logger": YoutubeDLLogger(),
+                                    "progress_hooks": [ytdl_hooks_debug],
+                                })
                                 logger.debug("Youtube-DL opts used for downloading")
                                 logger.debug(ytdl_format_options)
                             try:
                                 yt_dlp.YoutubeDL(ytdl_format_options).download([dlurl])
                                 self.rescanseries(ser["id"])
-                                logger.info(
-                                    "      Downloaded - {}".format(eps["title"])
-                                )
+                                logger.info("      Downloaded - {}".format(eps["title"]))
                             except Exception as e:
-                                logger.error(
-                                    "      Failed - {} - {}".format(eps["title"], e)
-                                )
+                                logger.error("      Failed - {} - {}".format(eps["title"], e))
                         else:
-                            logger.info(
-                                "    {}: Missing - {}:".format(e + 1, eps["title"])
-                            )
+                            logger.info("    {}: Missing - {}:".format(e + 1, eps["title"]))
         else:
             logger.info("Nothing to process")
 
@@ -423,13 +372,9 @@ class SonarrYTDL(object):
         global SCANINTERVAL
         if interval != SCANINTERVAL:
             SCANINTERVAL = interval
-            logger.info(
-                "Scan interval set to every {} minutes by config.yml".format(interval)
-            )
+            logger.info(f"Scan interval set to every {interval} minutes by config.yml")
         else:
-            logger.info(
-                "Default scan interval of every {} minutes in use".format(interval)
-            )
+            logger.info(f"Default scan interval of every {interval} minutes in use")
         return
 
 
