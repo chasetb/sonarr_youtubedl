@@ -56,9 +56,11 @@ class SonarrYTDL:
                             logs.setLevel(logging.DEBUG)
                     logger.debug("DEBUGGING ENABLED")
             except AttributeError:
+                logger.exception("AttributeError")
                 self.debug = False
         except Exception:
-            sys.exit("Error with sonarrytdl config.yml values.")
+            logger.exception("Error with sonarrytdl config.yml values.")
+            sys.exit()
 
         # Sonarr Setup
         try:
@@ -77,19 +79,22 @@ class SonarrYTDL:
             self.sonarr_api_version = api
             self.api_key = cfg["sonarr"]["apikey"]
         except Exception:
-            sys.exit("Error with sonarr config.yml values.")
+            logger.exception("Error with sonarr config.yml values.")
+            sys.exit()
 
         # YTDL Setup
         try:
             self.ytdl_format = cfg["ytdl"]["default_format"]
         except Exception:
-            sys.exit("Error with ytdl config.yml values.")
+            logger.exception("Error with ytdl config.yml values.")
+            sys.exit()
 
         # YTDL Setup
         try:
             self.series = cfg["series"]
         except Exception:
-            sys.exit("Error with series config.yml values.")
+            logger.exception("Error with series config.yml values.")
+            sys.exit()
 
     def get_episodes_by_series_id(self, series_id):
         """Returns all episodes for the given series"""
@@ -278,14 +283,14 @@ class SonarrYTDL:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 result = ydl.extract_info(playlist, download=False)
         except Exception:
-            logger.exception()
+            logger.exception("extract_info failed")
         else:
             video_url = None
             if "entries" in result and len(result["entries"]) > 0:
                 try:
                     video_url = result["entries"][0].get("webpage_url")
                 except Exception:
-                    logger.exception()
+                    logger.exception("error getting video_url")
             else:
                 video_url = result.get("webpage_url")
             if playlist == video_url:
