@@ -331,23 +331,22 @@ class SonarrYTDL:
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
                                 ytdl_format_options = self.customformat(ytdl_format_options, ser["format"])
-                            if "subtitles" in ser:
-                                if ser["subtitles"]:
-                                    postprocessors = []
-                                    postprocessors.append({
-                                        "key": "FFmpegSubtitlesConvertor",
-                                        "format": "srt",
-                                    })
-                                    postprocessors.append({
-                                        "key": "FFmpegEmbedSubtitle",
-                                    })
-                                    ytdl_format_options.update({
-                                        "writesubtitles": True,
-                                        "allsubtitles": True,
-                                        "writeautomaticsub": True,
-                                        "subtitleslangs": ser["subtitles_languages"],
-                                        "postprocessors": postprocessors,
-                                    })
+                            if "subtitles" in ser and ser["subtitles"]:
+                                postprocessors = []
+                                postprocessors.append({
+                                    "key": "FFmpegSubtitlesConvertor",
+                                    "format": "srt",
+                                })
+                                postprocessors.append({
+                                    "key": "FFmpegEmbedSubtitle",
+                                })
+                                ytdl_format_options.update({
+                                    "writesubtitles": True,
+                                    "allsubtitles": True,
+                                    "writeautomaticsub": True,
+                                    "subtitleslangs": ser["subtitles_languages"],
+                                    "postprocessors": postprocessors,
+                                })
 
                             if self.debug is True:
                                 ytdl_format_options.update({
@@ -361,8 +360,8 @@ class SonarrYTDL:
                                 yt_dlp.YoutubeDL(ytdl_format_options).download([dlurl])
                                 self.rescanseries(ser["id"])
                                 logger.info("      Downloaded - {}".format(eps["title"]))
-                            except Exception as e:
-                                logger.error("      Failed - {} - {}".format(eps["title"], e))
+                            except Exception:
+                                logger.exception(f'      Failed - {eps["title"]}')
                         else:
                             logger.info("    {}: Missing - {}:".format(e + 1, eps["title"]))
         else:

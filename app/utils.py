@@ -21,7 +21,7 @@ def upperescape(string):
     # UPPERCASE as YTDL is case insensitive for ease.
     string = string.upper()
     # Remove quote characters as YTDL converts these.
-    string = string.replace("’", "'")
+    string = string.replace("’", "'")  # noqa: RUF001
     string = string.replace("“", '"')
     string = string.replace("”", '"')
     # Escape the characters
@@ -58,7 +58,7 @@ def checkconfig():
         logger.critical("Configuration file not found.")  # print('Configuration file not found.')
         if not config_template_exists:
             command = f"cp /app/config.yml.template {config_template}"
-            os.system(command)
+            os.system(command) # noqa: S605
         logger.critical(
             "Create a config.yml using config.yml.template as an example."
         )  # sys.exit("Create a config.yml using config.yml.template as an example.")
