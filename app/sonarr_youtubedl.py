@@ -73,9 +73,7 @@ class SonarrYTDL:
             if cfg["sonarr"].get("basedir", ""):
                 basedir = "/" + cfg["sonarr"].get("basedir", "")
 
-            self.base_url = "{0}://{1}:{2}{3}".format(
-                scheme, cfg["sonarr"]["host"], str(cfg["sonarr"]["port"]), basedir
-            )
+            self.base_url = "{}://{}:{}{}".format(scheme, cfg["sonarr"]["host"], str(cfg["sonarr"]["port"]), basedir)
             self.sonarr_api_version = api
             self.api_key = cfg["sonarr"]["apikey"]
         except Exception:
@@ -175,9 +173,8 @@ class SonarrYTDL:
                         ser["cookies_file"] = wnt["cookies_file"]
                     if "format" in wnt:
                         ser["format"] = wnt["format"]
-                    if "playlistreverse" in wnt:
-                        if wnt["playlistreverse"] == "False":
-                            ser["playlistreverse"] = False
+                    if "playlistreverse" in wnt and wnt["playlistreverse"] == "False":
+                        ser["playlistreverse"] = False
                     if "subtitles" in wnt:
                         ser["subtitles"] = True
                         if "languages" in wnt["subtitles"]:
@@ -188,7 +185,7 @@ class SonarrYTDL:
                     matched.append(ser)
         for check in matched:
             if not check["monitored"]:
-                logger.warn("{0} is not currently monitored".format(ser["title"]))
+                logger.warn("{} is not currently monitored".format(ser["title"]))
         del series[:]
         return matched
 
@@ -212,12 +209,12 @@ class SonarrYTDL:
                     needed.append(eps)
                     continue
             if len(episodes) == 0:
-                logger.info("{0} no episodes needed".format(ser["title"]))
+                logger.info("{} no episodes needed".format(ser["title"]))
                 series.remove(ser)
             else:
-                logger.info("{0} missing {1} episodes".format(ser["title"], len(episodes)))
+                logger.info("{} missing {} episodes".format(ser["title"], len(episodes)))
                 for i, e in enumerate(episodes):
-                    logger.info("  {0}: {1} - {2}".format(i + 1, ser["title"], e["title"]))
+                    logger.info(f"  {i + 1}: {ser['title']} - {e['title']}")
         return needed
 
     def appendcookie(self, ytdlopts, cookies=None):
