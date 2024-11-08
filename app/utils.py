@@ -65,7 +65,7 @@ def checkconfig():
     else:
         logger.info("Configuration Found. Loading file.")  # print('Configuration Found. Loading file.')
         with open(config_file) as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.BaseLoader)
+            cfg = yaml.safe_load(ymlfile, Loader=yaml.BaseLoader)
         return cfg
 
 

@@ -21,8 +21,6 @@ select = [
     "SIM",
     # isort
     "I",
-    # mccabe
-    "C90",
     # pycodestyle
     "E", "W",
     # pyflakes
