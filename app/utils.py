@@ -58,7 +58,7 @@ def checkconfig():
         logger.critical("Configuration file not found.")  # print('Configuration file not found.')
         if not config_template_exists:
             command = f"cp /app/config.yml.template {config_template}"
-            os.system(command) # noqa: S605
+            os.system(command)  # noqa: S605
         logger.critical(
             "Create a config.yml using config.yml.template as an example."
         )  # sys.exit("Create a config.yml using config.yml.template as an example.")

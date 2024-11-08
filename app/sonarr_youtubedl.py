@@ -280,15 +280,15 @@ class SonarrYTDL:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 result = ydl.extract_info(playlist, download=False)
-        except Exception as e:
-            logger.error(e)
+        except Exception:
+            logger.exception()
         else:
             video_url = None
             if "entries" in result and len(result["entries"]) > 0:
                 try:
                     video_url = result["entries"][0].get("webpage_url")
-                except Exception as e:
-                    logger.error(e)
+                except Exception:
+                    logger.exception()
             else:
                 video_url = result.get("webpage_url")
             if playlist == video_url:
@@ -331,7 +331,7 @@ class SonarrYTDL:
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
                                 ytdl_format_options = self.customformat(ytdl_format_options, ser["format"])
-                            if "subtitles" in ser and ser["subtitles"]:
+                            if ser.get("subtitles"):
                                 postprocessors = []
                                 postprocessors.append({
                                     "key": "FFmpegSubtitlesConvertor",
@@ -361,7 +361,7 @@ class SonarrYTDL:
                                 self.rescanseries(ser["id"])
                                 logger.info("      Downloaded - {}".format(eps["title"]))
                             except Exception:
-                                logger.exception(f'      Failed - {eps["title"]}')
+                                logger.exception(f"      Failed - {eps['title']}")
                         else:
                             logger.info("    {}: Missing - {}:".format(e + 1, eps["title"]))
         else:
