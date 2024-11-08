@@ -302,7 +302,7 @@ class SonarrYTDL:
     def download(self, series, episodes):
         if len(series) != 0:
             logger.info("Processing Wanted Downloads")
-            for s, ser in enumerate(series):
+            for _s, ser in enumerate(series):
                 logger.info("  {}:".format(ser["title"]))
                 for e, eps in enumerate(episodes):
                     if ser["id"] == eps["seriesId"]:
