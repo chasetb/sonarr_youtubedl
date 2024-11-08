@@ -1,13 +1,15 @@
-FROM python:3.9-buster
+FROM python:3.12
 LABEL maintainer="Martin Jones <whatdaybob@outlook.com>"
 
 # Update and install ffmpeg
 RUN apt-get update && \
-    apt-get install -y ffmpeg 
+    apt-get install -y \
+    ffmpeg \
+    && pip install --upgrade pip
 
 # Copy and install requirements
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # create abc user so root isn't used
 RUN \
@@ -29,11 +31,11 @@ COPY app/ /app
 # update file permissions
 RUN \
     chmod a+x \
-    /app/sonarr_youtubedl.py \ 
+    /app/sonarr_youtubedl.py \
     /app/utils.py \
     /app/config.yml.template
 
 # ENV setup
-ENV CONFIGPATH /config/config.yml
+ENV CONFIGPATH=/config/config.yml
 
 CMD [ "python", "-u", "/app/sonarr_youtubedl.py" ]
