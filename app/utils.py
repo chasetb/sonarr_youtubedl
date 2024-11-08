@@ -57,7 +57,8 @@ def checkconfig():
     if not config_file_exists:
         logger.critical("Configuration file not found.")  # print('Configuration file not found.')
         if not config_template_exists:
-            os.system("cp /app/config.yml.template " + config_template)
+            command = f"cp /app/config.yml.template {config_template}"
+            os.system(command)
         logger.critical(
             "Create a config.yml using config.yml.template as an example."
         )  # sys.exit("Create a config.yml using config.yml.template as an example.")
