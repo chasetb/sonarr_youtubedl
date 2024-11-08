@@ -70,7 +70,7 @@ class SonarrYTDL:
             if cfg["sonarr"].get("version", "").lower() == "v4":
                 api = "api/v3"
                 logger.debug("Sonarr api set to v4")
-            if cfg["sonarr"]["ssl"].lower() == "true":
+            if cfg["sonarr"]["ssl"]:
                 scheme = "https"
             if cfg["sonarr"].get("basedir", ""):
                 basedir = "/" + cfg["sonarr"].get("basedir", "")
