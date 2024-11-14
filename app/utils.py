@@ -24,12 +24,13 @@ def upperescape(string):
     # Normalize hyphens and en dashes for consistent matching
     string = string.replace("–", "-")  # Replace en dash with a regular hyphen # noqa: RUF001
 
-    # Escape special regex characters using `re.escape`
-    string = re.escape(string)
+    # Escape parentheses to match them as literal characters in the final regex pattern
+    string = string.replace("(", r"\(")  # escape opening parenthesis
+    string = string.replace(")", r"\)")  # escape closing parenthesis
 
     # Make punctuation optional and handle certain punctuation patterns
-    string = string.replace("\\:", "([:]?)")  # optional colon
-    string = string.replace("'", "([']?)")  # optional apostrophe
+    string = string.replace(":", "([:]?)")  # optional colon
+    string = string.replace("'", "(['’]?)")  # optional apostrophe  # noqa: RUF001
     string = string.replace(",", "([,]?)")  # optional comma
     string = string.replace("!", "([!]?)")  # optional exclamation mark
     string = string.replace("\\?", "([\\?]?)")  # optional question mark
@@ -38,20 +39,19 @@ def upperescape(string):
     # Replace " AND " or " & " with an appropriate regex match
     string = string.replace("\\ AND\\ ", "\\ (AND|&)\\ ")
 
-    # Use regex sub to handle spaces and backslashes
-    # This replaces sequences of "\\ " (backslash + space) with "\s+" in the string
-    string = re.sub(r"\\ +", r"\\s+", string)
-
     # Make hyphens optional or interchangeable with other punctuation
     # This handles cases where a dash or hyphen might differ between titles
     # This substitution ensures sequences of hyphens or dashes match
     # a set of hyphens and dashes in the original string.
-    string = re.sub(r"-+", "[-–]+", string)  # noqa: RUF001
+    string = string.replace("-", "([-–]??)")  # noqa: RUF001
 
     # Replace optional belonging apostrophe before the `S` if present
     # The pattern "S\\\\" matches an `S` followed by a backslash.
     # The replacement ensures that there can be an optional apostrophe before `S\`
     string = re.sub("S\\\\", "([']?)S\\\\", string)
+
+    # Use regex sub to handle spaces
+    string = string.replace(" ", r"\s*")
 
     return string
 
