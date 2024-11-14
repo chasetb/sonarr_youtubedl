@@ -381,6 +381,8 @@ class SonarrYTDL:
                                 "writethumbnail": True,
                                 "check_formats": True,
                                 'forceipv4': True,
+                                'sleep_interval': 5,
+                                'max_sleep_interval': 30,
                             }
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
