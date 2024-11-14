@@ -265,6 +265,7 @@ class SonarrYTDL:
             "playlistreverse": playlistreverse,
             "matchtitle": regextitle,
             "quiet": True,
+            "extract_flat": True,  # Ensure a flat extraction of playlist items
         }
         if self.debug is True:
             ytdlopts.update({
@@ -286,9 +287,10 @@ class SonarrYTDL:
             logger.exception("extract_info failed")
         else:
             video_url = None
-            if "entries" in result and len(result["entries"]) > 0:
+            entries = result.get("entries", None)
+            if entries and entries != [None]:
                 try:
-                    video_url = result["entries"][0].get("webpage_url")
+                    video_url = entries[0].get("webpage_url")
                 except Exception:
                     logger.exception("error getting video_url")
             else:
