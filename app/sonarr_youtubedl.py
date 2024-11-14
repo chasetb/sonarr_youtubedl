@@ -386,8 +386,11 @@ class SonarrYTDL:
                                 'nocontinue': True,
                                 'nooverwrites': True,
                                 'throttled_rate': '100K',
+                                'concurrent_fragments': 5,
                             }
+
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
+                            
                             if "format" in ser:
                                 ytdl_format_options = self.customformat(ytdl_format_options, ser["format"])
 
