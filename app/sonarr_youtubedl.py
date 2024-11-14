@@ -89,6 +89,11 @@ class SonarrYTDL:
             logger.exception("Error with ytdl config.yml values.")
             sys.exit()
 
+        try:
+            self.ytdl_merge_output_format = cfg["ytdl"]["merge_output_format"]
+        except Exception:
+            sys.exit("Error with ytdl config.yml values.")
+
         # YTDL Setup
         try:
             self.series = cfg["series"]
@@ -326,7 +331,7 @@ class SonarrYTDL:
                             ytdl_format_options = {
                                 "format": self.ytdl_format,
                                 "quiet": True,
-                                "merge-output-format": "mp4",
+                                "merge-output-format": self.ytdl_merge_output_format,
                                 "outtmpl": "/sonarr_root{0}/Season {1}/{2}.S{1}E{3}.{4}.%(ext)s".format(
                                     ser["path"],
                                     eps["seasonNumber"],
