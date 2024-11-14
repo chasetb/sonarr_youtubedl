@@ -353,8 +353,11 @@ class SonarrYTDL:
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
                                 ytdl_format_options = self.customformat(ytdl_format_options, ser["format"])
+
+                            # Init postprocessors
+                            postprocessors = []
+
                             if ser.get("subtitles"):
-                                postprocessors = []
                                 postprocessors.append({
                                     "key": "FFmpegSubtitlesConvertor",
                                     "format": "srt",
@@ -367,8 +370,11 @@ class SonarrYTDL:
                                     "allsubtitles": True,
                                     "writeautomaticsub": True,
                                     "subtitleslangs": ser["subtitles_languages"],
-                                    "postprocessors": postprocessors,
+                                    "embedsubtitles": True,
                                 })
+
+                            # Add postprocessors
+                            ytdl_format_options.update({"postprocessors": postprocessors})
 
                             if self.debug is True:
                                 ytdl_format_options.update({
