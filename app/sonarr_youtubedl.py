@@ -340,7 +340,7 @@ class SonarrYTDL:
                             eps_title = sanitize_filename(eps["title"], replacement=" ")
                             ser_title = sanitize_filename(ser["title"], replacement=" ")
 
-                            base_path = Path("/sonarr_root") / ser["path"].lstrip("/")
+                            base_path = Path("/sonarr_root") / ser["path"].replace("/media/", "").lstrip("/")
 
                             season_folder = base_path / f"Season {eps['seasonNumber']}"
 
