@@ -82,6 +82,11 @@ class SonarrYTDL(object):
         except Exception:
             sys.exit("Error with ytdl config.yml values.")
 
+        try:
+            self.ytdl_merge_output_format = cfg["ytdl"]["merge_output_format"]
+        except Exception:
+            sys.exit("Error with ytdl config.yml values.")
+
         # YTDL Setup
         try:
             self.series = cfg["series"]
@@ -363,15 +368,15 @@ class SonarrYTDL(object):
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps['title']))
                             ytdl_format_options = {
-                                'format': self.ytdl_format,
-                                'quiet': True,
-                                'merge-output-format': 'mp4',
-                                'outtmpl': '/sonarr_root{0}/Season {1}/{2} - S{1}E{3} - {4} WEBDL.%(ext)s'.format(
-                                    ser['path'],
-                                    eps['seasonNumber'],
-                                    ser['title'],
-                                    eps['episodeNumber'],
-                                    eps['title']
+                                "format": self.ytdl_format,
+                                "quiet": True,
+                                "merge_output_format": self.ytdl_merge_output_format,
+                                "outtmpl": "/sonarr_root{0}/Season {1}/{2}.S{1}E{3}.{4}.%(ext)s".format(
+                                    ser["path"],
+                                    eps["seasonNumber"],
+                                    ser_title_no_colon,
+                                    eps["episodeNumber"],
+                                    episode_title_no_colon,
                                 ),
                                 'progress_hooks': [ytdl_hooks],
                                 'noplaylist': True,
