@@ -318,16 +318,21 @@ class SonarrYTDL:
                         found, dlurl = self.ytsearch(ydleps, url)
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps["title"]))
+
+                            # Remove colons from series and episode titles
+                            episode_title_no_colon = eps["title"].replace(":", "")
+                            ser_title_no_colon = ser["title"].replace(":", "")
+
                             ytdl_format_options = {
                                 "format": self.ytdl_format,
                                 "quiet": True,
                                 "merge-output-format": "mp4",
-                                "outtmpl": "/sonarr_root{0}/Season {1}/{2} - S{1}E{3} - {4} WEBDL.%(ext)s".format(
+                                "outtmpl": "/sonarr_root{0}/Season {1}/{2}.S{1}E{3}.{4}.%(ext)s".format(
                                     ser["path"],
                                     eps["seasonNumber"],
-                                    ser["title"],
+                                    ser_title_no_colon,
                                     eps["episodeNumber"],
-                                    eps["title"],
+                                    episode_title_no_colon,
                                 ),
                                 "progress_hooks": [ytdl_hooks],
                                 "noplaylist": True,
