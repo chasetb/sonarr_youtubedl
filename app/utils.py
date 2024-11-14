@@ -11,6 +11,31 @@ CONFIGFILE = os.environ["CONFIGPATH"]
 # CONFIGPATH = CONFIGFILE.replace('config.yml', '')
 
 
+def sanitize_filename(name, replacement="-"):
+    """
+    Sanitize a string to be used as a safe filename.
+
+    Parameters:
+        name (str): The original filename string.
+        replacement (str): The character to replace invalid characters with.
+
+    Returns:
+        str: A sanitized filename string.
+    """
+    # Define a pattern for invalid characters (based on Windows, macOS, and Linux restrictions)
+    invalid_chars = r'[<>:"/\\|?*\n\r\t]'
+    # Replace invalid characters with the specified replacement character
+    sanitized_name = re.sub(invalid_chars, replacement, name)
+
+    # Remove leading and trailing whitespace & double spaces
+    sanitized_name = sanitized_name.strip()
+    sanitized_name = sanitized_name.replace("  ", " ")
+
+    # Optionally, limit the length of the filename
+    max_length = 255  # Max filename length for most filesystems
+    return sanitized_name[:max_length]
+
+
 def upperescape(string):
     """Uppercase and Escape string. Used to help with YT-DL regex match.
     - ``string``: string to manipulate
