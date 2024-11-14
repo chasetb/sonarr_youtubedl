@@ -1,5 +1,10 @@
-FROM python:3.12
+FROM python:3.12-slim
 LABEL maintainer="Martin Jones <whatdaybob@outlook.com>"
+
+# Set volumes
+VOLUME /config
+VOLUME /sonarr_root
+VOLUME /logs
 
 # Set environment variables
 ENV APP_HOME=/app \
@@ -7,11 +12,6 @@ ENV APP_HOME=/app \
     SONARR_ROOT=/sonarr_root \
     LOGS_DIR=/logs \
     CONFIGPATH=/config/config.yml
-
-# Set volumes
-VOLUME /config
-VOLUME /sonarr_root
-VOLUME /logs
 
 # Update packages, install ffmpeg, and upgrade pip
 RUN apt-get update && \
