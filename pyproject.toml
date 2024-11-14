@@ -1,3 +1,15 @@
+[project]
+name = "sonarr_youtubedl"
+version = "1.0"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests==2.32.3",
+    "yt-dlp==2024.11.4",
+    "pyyaml==6.0.2",
+    "schedule==1.2.2",
+]
+
 [tool.ruff]
 target-version = "py39"
 line-length = 120

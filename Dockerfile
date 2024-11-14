@@ -1,41 +1,50 @@
-FROM python:3.12
+FROM python:3.12-slim
 LABEL maintainer="Martin Jones <whatdaybob@outlook.com>"
 
-# Update and install ffmpeg
-RUN apt-get update && \
-    apt-get install -y \
-    ffmpeg \
-    && pip install --upgrade pip
-
-# Copy and install requirements
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-# create abc user so root isn't used
-RUN \
-	groupmod -g 1000 users && \
-	useradd -u 911 -U -d /config -s /bin/false abc && \
-	usermod -G users abc && \
-# create some files / folders
-	mkdir -p /config /app /sonarr_root /logs && \
-	touch /var/lock/sonarr_youtube.lock
-
-# add volumes
+# Set volumes
 VOLUME /config
 VOLUME /sonarr_root
 VOLUME /logs
 
-# add local files
-COPY app/ /app
+# Set environment variables
+ENV APP_HOME=/app \
+    CONFIG_DIR=/config \
+    SONARR_ROOT=/sonarr_root \
+    LOGS_DIR=/logs \
+    CONFIGPATH=/config/config.yml
 
-# update file permissions
-RUN \
-    chmod a+x \
-    /app/sonarr_youtubedl.py \
-    /app/utils.py \
-    /app/config.yml.template
+# Update packages, install ffmpeg, and upgrade pip
+RUN apt-get update && \
+    apt-get install -y ffmpeg && \
+    pip install uv && \
+    rm -rf /var/lib/apt/lists/*
 
-# ENV setup
-ENV CONFIGPATH=/config/config.yml
+# Create a non-root user (abc) and necessary directories
+RUN groupmod -g 1000 users && \
+    useradd -u 911 -U -d /config -s /bin/false abc && \
+    usermod -G users abc && \
+    mkdir -p $CONFIG_DIR $APP_HOME $SONARR_ROOT $LOGS_DIR && \
+    touch /var/lock/sonarr_youtube.lock && \
+    chown -R abc:users $CONFIG_DIR $APP_HOME $SONARR_ROOT $LOGS_DIR
 
-CMD [ "python", "-u", "/app/sonarr_youtubedl.py" ]
+# Set work directory
+WORKDIR $APP_HOME
+
+# Copy uv project files
+COPY pyproject.toml .
+COPY uv.lock .
+
+# Install dependencies using uv
+RUN uv sync --frozen --no-install-project --no-editable
+
+# Copy application code
+COPY app/ .
+
+# Update file permissions
+RUN chmod a+x $APP_HOME/sonarr_youtubedl.py $APP_HOME/utils.py $APP_HOME/config.yml.template
+
+# Switch to the non-root user
+USER abc
+
+# Set the default command
+CMD [ "uv", "run", "/app/sonarr_youtubedl.py" ]
