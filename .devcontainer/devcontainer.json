@@ -2,7 +2,7 @@
 	"name": "sonarr_youtubedl",
 	"context": "..",
 	"dockerFile": "..\\Dockerfile",
-	"settings": { 
+	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"python.pythonPath": "/usr/local/bin/python",
 		"python.linting.enabled": true,
