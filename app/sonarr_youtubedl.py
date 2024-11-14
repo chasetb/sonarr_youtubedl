@@ -385,6 +385,7 @@ class SonarrYTDL:
                                 'max_sleep_interval': 30,
                                 'nocontinue': True,
                                 'nooverwrites': True,
+                                'throttled_rate': '100K',
                             }
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
