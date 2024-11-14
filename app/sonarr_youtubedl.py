@@ -46,7 +46,7 @@ class SonarrYTDL:
         try:
             self.set_scan_interval(cfg["sonarrytdl"]["scan_interval"])
             try:
-                self.debug = cfg["sonarrytdl"]["debug"] in ["true", "True"]
+                self.debug = cfg["sonarrytdl"]["debug"]
                 if self.debug:
                     logger.setLevel(logging.DEBUG)
                     for logs in logger.handlers:
