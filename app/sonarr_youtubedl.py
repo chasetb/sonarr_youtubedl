@@ -380,6 +380,7 @@ class SonarrYTDL:
                                 "noplaylist": True,
                                 "writethumbnail": True,
                                 "check_formats": True,
+                                'forceipv4': True,
                             }
                             ytdl_format_options = self.appendcookie(ytdl_format_options, cookies)
                             if "format" in ser:
