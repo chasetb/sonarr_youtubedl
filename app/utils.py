@@ -24,6 +24,10 @@ def upperescape(string):
     # Normalize hyphens and en dashes for consistent matching
     string = string.replace("–", "-")  # Replace en dash with a regular hyphen # noqa: RUF001
 
+    # Escape parentheses to match them as literal characters in the final regex pattern
+    string = string.replace("(", r"\(")  # escape opening parenthesis
+    string = string.replace(")", r"\)")  # escape closing parenthesis
+
     # Make punctuation optional and handle certain punctuation patterns
     string = string.replace(":", "([:]?)")  # optional colon
     string = string.replace("'", "(['’]?)")  # optional apostrophe  # noqa: RUF001
