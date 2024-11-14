@@ -90,7 +90,7 @@ class SonarrYTDL:
             sys.exit()
 
         try:
-            self.ytdl_merge_output_format = cfg['ytdl']['merge_output_format']
+            self.ytdl_merge_output_format = cfg["ytdl"]["merge_output_format"]
         except Exception:
             sys.exit("Error with ytdl config.yml values.")
 
