@@ -327,7 +327,7 @@ class SonarrYTDL:
                             f"{ser['title']} - {eps['title']}"
                             if ser.get("preprend_with_title", False)
                             else f"{eps['title']} {ser['title']}"
-                            if ser.get("preprend_with_title", False)
+                            if ser.get("append_with_title", False)
                             else eps["title"]
                         )
                         if "cookies_file" in ser:
