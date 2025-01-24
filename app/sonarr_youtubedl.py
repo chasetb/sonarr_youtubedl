@@ -201,10 +201,10 @@ class SonarrYTDL:
                     if "exclude_patterns" in wnt:
                         ser["exclude_patterns"] = wnt["exclude_patterns"]
 
-                    if "preprend_with_title" in wnt:
-                        ser["preprend_with_title"] = True
-                    else:
-                        ser["preprend_with_title"] = False
+                    ser["preprend_to_title"] = wnt.get("preprend_to_title", None)
+
+                    ser["append_to_title"] = wnt.get("append_to_title", None)
+
                     matched.append(ser)
         for check in matched:
             if not check["monitored"]:
@@ -285,6 +285,10 @@ class SonarrYTDL:
             "playlistreverse": playlistreverse,
             "matchtitle": regextitle,
             "quiet": True,
+            "forceipv4": True,
+            "sleep_interval": 5,
+            "max_sleep_interval": 30,
+            "throttled_rate": "100K",
         }
 
         if exclude_words:
@@ -346,10 +350,10 @@ class SonarrYTDL:
                         url = ser["url"]
 
                         eps_title = (
-                            f"{ser['title']} - {eps['title']}"
-                            if ser.get("preprend_with_title", False)
-                            else f"{eps['title']} {ser['title']}"
-                            if ser.get("append_with_title", False)
+                            f"{ser['preprend_to_title']} {eps['title']}"
+                            if ser.get("preprend_to_title", False)
+                            else f"{eps['title']} {ser['append_to_title']}"
+                            if ser.get("append_to_title", False)
                             else eps["title"]
                         )
                         if "cookies_file" in ser:
@@ -375,8 +379,8 @@ class SonarrYTDL:
                             eps_number = int(eps["episodeNumber"])
 
                             # Remove colons from series and episode titles
-                            eps_title = sanitize_filename(eps["title"], replacement=" ")
-                            ser_title = sanitize_filename(ser["title"], replacement=" ")
+                            eps_title = sanitize_filename(eps["title"])
+                            ser_title = sanitize_filename(ser["title"])
 
                             base_path = Path("/sonarr_root") / ser["path"].replace("/media/", "").lstrip("/")
 
