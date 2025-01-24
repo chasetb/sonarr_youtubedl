@@ -20,8 +20,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user (abc) and necessary directories
-RUN groupmod -g 1000 users && \
-    useradd -u 911 -U -d /config -s /bin/false abc && \
+RUN groupmod -g 100 users && \
+    useradd -u 1000 -U -d /config -s /bin/false abc && \
     usermod -G users abc && \
     mkdir -p $CONFIG_DIR $APP_HOME $SONARR_ROOT $LOGS_DIR && \
     touch /var/lock/sonarr_youtube.lock && \
