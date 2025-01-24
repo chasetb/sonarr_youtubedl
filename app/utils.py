@@ -11,7 +11,7 @@ CONFIGFILE = os.environ["CONFIGPATH"]
 # CONFIGPATH = CONFIGFILE.replace('config.yml', '')
 
 
-def sanitize_filename(name, replacement="-"):
+def sanitize_filename(name, replacement=" -"):
     """
     Sanitize a string to be used as a safe filename.
 
